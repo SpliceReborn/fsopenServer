@@ -70,6 +70,14 @@ app.post('/api/persons', (req, res) => {
             error: 'name and number must be filled'
         })
     }
+    const nameExists = persons.filter(p => 
+        p.name.toLowerCase() === req.body.name.toLowerCase()
+    )
+    if (!!nameExists.length) {
+        return res.status(400).json({
+            error: 'name already exists'
+        })
+    }  
     const newPerson = {
         id: Math.floor(Math.random()*10000000),
         name: req.body.name,
