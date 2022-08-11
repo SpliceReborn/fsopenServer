@@ -74,19 +74,21 @@ app.post('/api/persons', (req, res) => {
             error: 'name and number must be filled'
         })
     }
-    const nameExists = persons.filter(p => 
-        p.name.toLowerCase() === req.body.name.toLowerCase()
-    )
-    if (!!nameExists.length) {
-        return res.status(400).json({
-            error: 'name already exists'
-        })
-    }  
+    /* 3.14: Temporary allow adding repeated names
+     * const nameExists = persons.filter(p => 
+     *    p.name.toLowerCase() === req.body.name.toLowerCase()
+     * ) 
+     *  
+     * if (!!nameExists.length) {
+     *    return res.status(400).json({
+     *        error: 'name already exists'
+     *    })
+     * }
+     */  
     const newPerson = {
-        id: Math.floor(Math.random()*10000000),
         name: req.body.name,
         number: req.body.number
     }
-    persons = persons.concat(newPerson)
-    res.json(newPerson)
+    newPerson.save()
+        .then(savedPerson => res.json(savedPerson))
 })
