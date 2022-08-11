@@ -10,6 +10,7 @@ app.use(cors())
 app.use(express.static('build'))
 
 var morgan = require('morgan')
+const { response } = require('express')
 morgan.token('body', (req) => {
     return JSON.stringify(req.body)
 })
@@ -34,13 +35,22 @@ app.get('/api/persons', (req, res) => {
 
 app.get('/api/persons/:id', (req, res) => {
     Person.findById(req.params.id)
-        .then(person => res.json(person))
+        .then(person => {
+            if (person) res.json(person)
+            else res.status(404).end()
+        })
+        .catch(error => {
+            console.log(error)
+            res.status(400).send({error: 'malformatted id'})
+        })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(p => p.id !== id)
-    res.json(204).end()
+    Person.findByIdAndDelete(req.params.id)
+        .then(result => {
+            res.json(204).end()
+        })
+        .catch(error => console.log(error))
 })
 
 app.post('/api/persons', (req, res) => {
