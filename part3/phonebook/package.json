@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf build && cd ../../../fsopen/part2/phonebook && npm run build && cp -r build ../../../fsopenServer/part3",
+    "build:ui": "rm -rf build && cd ../../../fsopen/part2/phonebook && npm run build && cp -r build ../../../fsopenServer/part3/phonebook",
     "deploy": "git push heroku master"
   },
   "author": "Darren",

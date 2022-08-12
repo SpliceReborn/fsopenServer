@@ -60,31 +60,28 @@ app.delete('/api/persons/:id', (req, res, next) => {
 })
 
 app.post('/api/persons', (req, res, next) => {
-    // name & number cannot be empty!
-    if (!req.body.name || !req.body.number) {
-        const e = new Error('name and number must be filled')
-        e.name = 'NameNumberEmpty'
-        return next(e)
-    }
-    const newPerson = new Person({
-        name: req.body.name,
-        number: req.body.number
-    })
-    newPerson.save()
-        .then(savedPerson => res.json(savedPerson))
+    const {name, number} = req.body
+    Person.findOne({name: name})
+        .then(person => {
+            if (person) throw {
+                name: "InvalidPOST",
+                message: "POST request to existing name, should be PUT"
+            } 
+            else {
+                const newPerson = new Person({
+                    name: name,
+                    number: number
+                })
+                newPerson.save()
+                    .then(savedPerson => res.json(savedPerson))
+                    .catch(err => next(err))
+            }
+        })
         .catch(err => next(err))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
     const {name, number} = req.body
-    /* Don't have to check name since name must be equal 
-     * to some existing name for this request to be called
-     * Trying new method of throwing own custom obj (error?)
-     */
-    if (!number) throw {
-        name: "NameNumberEmpty",
-        message: "name and number must be filled"
-    }
     Person.findByIdAndUpdate(
         req.params.id, 
         {name, number}, 
@@ -97,13 +94,10 @@ app.put('/api/persons/:id', (req, res, next) => {
 const errorHandler = (err, req, res, next) => {
     if (err.name === 'CastError') {
         return res.status(400).send({error: 'malformatted id'})
-    } else if (err.name === 'NameNumberEmpty') {
-        return res.status(400).send({error: err.message})
-    } else if (err.name === 'idNull') {
-        return (res.status(404).send({error: err.message}))
-    } else if (err.name === 'ValidationError') {
-        return res.status(400).send({error: err.message})
-    }
+    } 
+    else if (err.name === 'NameNumberEmpty' || err.name === 'idNull' 
+        || err.name === 'ValidationError' || err.name === 'InvalidPOST'
+    ) { return res.status(400).send({error: err.message}) } 
     next(err)
 }
 
