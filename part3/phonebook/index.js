@@ -26,8 +26,7 @@ app.get('/info', (req, res, next) => {
             <p>Phonebook has info for ${persons.length} people</p>
             <p>${new Date()}
         `)
-    })
-    .catch(err => next(err))  
+    }).catch(err => next(err))
 })
 
 app.get('/api/persons', (req, res, next) => {
@@ -53,20 +52,20 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndDelete(req.params.id)
-        .then(result => {
+        .then(() => {
             res.json(204).end()
         })
         .catch(error => next(error))
 })
 
 app.post('/api/persons', (req, res, next) => {
-    const {name, number} = req.body
-    Person.findOne({name: name})
+    const { name, number } = req.body
+    Person.findOne({ name: name })
         .then(person => {
             if (person) throw {
-                name: "InvalidPOST",
-                message: "POST request to existing name, should be PUT"
-            } 
+                name: 'InvalidPOST',
+                message: 'POST request to existing name, should be PUT'
+            }
             else {
                 const newPerson = new Person({
                     name: name,
@@ -81,11 +80,11 @@ app.post('/api/persons', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const {name, number} = req.body
+    const { name, number } = req.body
     Person.findByIdAndUpdate(
-        req.params.id, 
-        {name, number}, 
-        {new: true, runValidators: true, context: 'query'}
+        req.params.id,
+        { name, number },
+        { new: true, runValidators: true, context: 'query' }
     )
         .then(updatedPerson => res.json(updatedPerson))
         .catch(err => next(err))
@@ -93,11 +92,11 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 const errorHandler = (err, req, res, next) => {
     if (err.name === 'CastError') {
-        return res.status(400).send({error: 'malformatted id'})
-    } 
-    else if (err.name === 'NameNumberEmpty' || err.name === 'idNull' 
+        return res.status(400).send({ error: 'malformatted id' })
+    }
+    else if (err.name === 'NameNumberEmpty' || err.name === 'idNull'
         || err.name === 'ValidationError' || err.name === 'InvalidPOST'
-    ) { return res.status(400).send({error: err.message}) } 
+    ) { return res.status(400).send({ error: err.message }) }
     next(err)
 }
 
