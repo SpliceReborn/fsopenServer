@@ -9,8 +9,15 @@ mongoose.connect(url)
     .catch(error => console.log(error.message))
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {
+        type: String,
+        required: [true, 'Name must not be empty'],
+        minLength: [3, 'Length of name must be at least 3 characters']
+    },
+    number: {
+        type: String,
+        required: [true, 'Number must not be empty'],
+    }
 })
 
 personSchema.set('toJSON', {

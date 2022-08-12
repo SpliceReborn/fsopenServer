@@ -66,40 +66,30 @@ app.post('/api/persons', (req, res, next) => {
         e.name = 'NameNumberEmpty'
         return next(e)
     }
-    /* 3.14: Temporary allow adding repeated names
-     * const nameExists = persons.filter(p => 
-     *    p.name.toLowerCase() === req.body.name.toLowerCase()
-     * ) 
-     *  
-     * if (!!nameExists.length) {
-     *    return res.status(400).json({
-     *        error: 'name already exists'
-     *    })
-     * }
-     */  
     const newPerson = new Person({
         name: req.body.name,
         number: req.body.number
     })
     newPerson.save()
         .then(savedPerson => res.json(savedPerson))
+        .catch(err => next(err))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const body = req.body
+    const {name, number} = req.body
     /* Don't have to check name since name must be equal 
      * to some existing name for this request to be called
      * Trying new method of throwing own custom obj (error?)
      */
-    if (!body.number) throw {
+    if (!number) throw {
         name: "NameNumberEmpty",
         message: "name and number must be filled"
     }
-    const person = {
-        name: body.name,
-        number: body.number
-    }
-    Person.findByIdAndUpdate(req.params.id, person, {new: true})
+    Person.findByIdAndUpdate(
+        req.params.id, 
+        {name, number}, 
+        {new: true, runValidators: true, context: 'query'}
+    )
         .then(updatedPerson => res.json(updatedPerson))
         .catch(err => next(err))
 })
@@ -111,6 +101,8 @@ const errorHandler = (err, req, res, next) => {
         return res.status(400).send({error: err.message})
     } else if (err.name === 'idNull') {
         return (res.status(404).send({error: err.message}))
+    } else if (err.name === 'ValidationError') {
+        return res.status(400).send({error: err.message})
     }
     next(err)
 }
