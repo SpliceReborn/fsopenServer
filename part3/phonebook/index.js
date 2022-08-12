@@ -82,6 +82,25 @@ app.post('/api/persons', (req, res, next) => {
         .then(savedPerson => res.json(savedPerson))
 })
 
+app.put('/api/persons/:id', (req, res, next) => {
+    const body = req.body
+    /* Don't have to check name since name must be equal 
+     * to some existing name for this request to be called
+     * Trying new method of throwing own custom obj (error?)
+     */
+    if (!body.number) throw {
+        name: "NameNumberEmpty",
+        message: "name and number must be filled"
+    }
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+    Person.findByIdAndUpdate(req.params.id, person, {new: true})
+        .then(updatedPerson => res.json(updatedPerson))
+        .catch(err => next(err))
+})
+
 const errorHandler = (err, req, res, next) => {
     if (err.name === 'CastError') {
         return res.status(400).send({error: 'malformatted id'})
