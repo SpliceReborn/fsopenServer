@@ -20,11 +20,14 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
 
-app.get('/info', (req, res) => {
-    res.send(`
-        <p>Phonebook has info for ${persons.length} people</p>
-        <p>${new Date()}
-    `)
+app.get('/info', (req, res, next) => {
+    Person.find({}).then(persons => {
+        res.send(`
+            <p>Phonebook has info for ${persons.length} people</p>
+            <p>${new Date()}
+        `)
+    })
+    .catch(err => next(err))  
 })
 
 app.get('/api/persons', (req, res, next) => {
